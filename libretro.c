@@ -345,8 +345,8 @@ void drawSprites(int pri) {
 							uint8_t x2 = x|(xh<<3);
 							uint8_t y2 = y|(yh<<3);
 							//Destination pixel on screen
-							int xd = (memory[addr|3]&0x40)?(xhm2-x2+memory[addr]-1):(memory[addr]+x2);
-							int yd = (memory[addr|3]&0x80)?(yhm2-y2+memory[addr|1]-1):(memory[addr|1]+y2);
+							int xd = (memory[addr|3]&0x40)?(7+xhm2-x2+memory[addr]):(memory[addr]+x2);
+							int yd = (memory[addr|3]&0x80)?(7+yhm2-y2+memory[addr|1]):(memory[addr|1]+y2);
 							//If sprite is enabled in quadrant AND quadrant has sprites enabled, draw sprite
 							if((xd< splx && yd< sply && (memory[0x7424]&0x80) && (memory[addr2]&0x08))||
 							   (xd>=splx && yd< sply && (memory[0x7424]&0x40) && (memory[addr2]&0x04))||
@@ -425,6 +425,7 @@ static void audioCallbackFunc() {
 					if(chanTimers[n]>=3000) {
 						chanTimers[n] -= 3000;
 						chanSamples[n]++;
+						chanSamples[n] &= 0xF;
 						if((inst>>1)==3) {
 							if(waveformLut[96|chanSamples[n]]) {
 								chanVals[n] = ((rand()&1)<<9)-256;

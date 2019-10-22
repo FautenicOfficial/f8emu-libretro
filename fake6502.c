@@ -344,7 +344,8 @@ static void indy() { // (indirect),Y
 
 //Additional 65C02 addressing modes
 static void indzp() { //(zero-page)
-    ea = (uint16_t)read6502((uint16_t)pc++);
+    uint16_t eahelp = (uint16_t)((uint16_t)read6502(pc++)); //zero-page wraparound for table pointer
+    ea = (uint16_t)read6502(eahelp & 0x00FF) | ((uint16_t)read6502((eahelp+1) & 0x00FF) << 8);
 }
 
 static void indabsx() { // (absolute,X) (for jumping)
@@ -373,29 +374,24 @@ static void adc() {
     penaltyop = 1;
     value = getvalue();
     result = (uint16_t)a + value + (uint16_t)(status & FLAG_CARRY);
-   
-    carrycalc(result);
+    
+    if (status & FLAG_DECIMAL) {
+	    if(((a&0xF)+(value&0xF)+(status&FLAG_CARRY))>9) {
+		    result += 0x06;
+	    }
+	    if((result&0xF0)>0x90) {
+		    result += 0x60;
+		    setcarry();
+	    } else {
+		    clearcarry();
+	    }
+    } else {
+	    carrycalc(result);
+    }
+    
     zerocalc(result);
     overflowcalc(result, a, value);
     signcalc(result);
-    
-    if (status & FLAG_DECIMAL) {
-        clearcarry();
-	uint8_t loNybble = (a&0xF)+(value&0xF)+(status&FLAG_CARRY);
-	uint8_t carry = 0;
-	if(loNybble>9) {
-		loNybble += 6;
-		carry = 1;
-	}
-	uint8_t hiNybble = ((a>>4)&0xF)+((value>>4)&0xF)+carry;
-	if(hiNybble>9) {
-		hiNybble += 6;
-		setcarry();
-	}
-	result = loNybble|(hiNybble<<4);
-        clockticks6502+=2;
-    }
-   
     saveaccum(result);
 }
 
@@ -745,32 +741,28 @@ static void rts() {
 
 static void sbc() {
     penaltyop = 1;
-    value = getvalue() ^ 0x00FF;
-    result = (uint16_t)a + value + (uint16_t)(status & FLAG_CARRY);
+    value = getvalue();
+    uint8_t carry = (status & FLAG_CARRY)^1;
+    result = (uint16_t)a - value - carry;
+
+    if (status & FLAG_DECIMAL) {
+	    if(((result&0xF)>9)||(((a&0xF)-(value&0xF)-carry)&0x10)) {
+		    result -= 0x06;
+	    }
+	    if((result&0xF0)>0x90) {
+		    result -= 0x60;
+		    clearcarry();
+	    } else {
+		    setcarry();
+	    }
+    } else {
+	    carrycalc(result);
+	    status ^= 1;
+    }
    
-    carrycalc(result);
     zerocalc(result);
     overflowcalc(result, a, value);
     signcalc(result);
-
-    if (status & FLAG_DECIMAL) {
-        clearcarry();
-	a-=0x66;
-	uint8_t loNybble = (a&0xF)+(value&0xF)+(status&FLAG_CARRY);
-	uint8_t carry = 0;
-	if(loNybble>9) {
-		loNybble += 6;
-		carry = 1;
-	}
-	uint8_t hiNybble = ((a>>4)&0xF)+((value>>4)&0xF)+carry;
-	if(hiNybble>9) {
-		hiNybble += 6;
-		setcarry();
-	}
-	result = loNybble|(hiNybble<<4);
-        clockticks6502+=2;
-    }
-   
     saveaccum(result);
 }
 
