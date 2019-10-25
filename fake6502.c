@@ -949,7 +949,7 @@ void irq6502() {
 }
 
 void exec6502(uint32_t tickcount) {
-    clockgoal6502 += tickcount;
+    clockgoal6502 = tickcount;
    
     while (clockticks6502 < clockgoal6502) {
         opcode = read6502(pc++);
@@ -965,6 +965,8 @@ void exec6502(uint32_t tickcount) {
 
         instructions++;
     }
+    
+    clockticks6502 -= clockgoal6502;
 
 }
 

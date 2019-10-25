@@ -45,8 +45,8 @@ static retro_audio_sample_batch_t audioBatchCallback;
 static retro_input_poll_t inputPollCallback;
 static retro_input_state_t inputQueryCallback;
 
-static struct retro_game_info curGameInfo;
-char baseDir[4096],sramPath[4096];
+char sramPath[4096];
+int sramLen;
 static unsigned int portDevices[4] = {RETRO_DEVICE_JOYPAD,RETRO_DEVICE_JOYPAD,RETRO_DEVICE_JOYPAD,RETRO_DEVICE_JOYPAD};
 
 //////////////////
@@ -68,8 +68,13 @@ unsigned int retro_api_version() {
 void retro_init() {
 	srand(time(NULL));
 	const char * dir = NULL;
-	if(environmentCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY,&dir)&&dir) {
-		strncpy(baseDir,dir,4095);
+	if(environmentCallback(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY,&dir)&&dir) {
+		if(dir==NULL) {
+			environmentCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY,&dir);
+		}
+		strncpy(sramPath,dir,4095);
+		strcat(sramPath,"/f8emu_");
+		sramLen = strlen(sramPath);
 	}
 }
 void retro_set_environment(retro_environment_t cb) {
@@ -93,7 +98,7 @@ void retro_set_controller_port_device(unsigned int port,unsigned int device) {
 void retro_get_system_info(struct retro_system_info * info) {
 	memset(info,0,sizeof(*info));
 	
-	info->library_name = "F8EmuLib";
+	info->library_name = "F8Emu LibRetro";
 	info->library_version = "1.0";
 	info->need_fullpath = true;
 	info->valid_extensions = "f8";
@@ -113,11 +118,7 @@ void retro_get_system_av_info(struct retro_system_av_info * info) {
 	environmentCallback(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT,&pixelFmt);
 }
 bool retro_load_game(const struct retro_game_info * info) {
-	curGameInfo = *info;
-	strcpy(sramPath,curGameInfo.path);
-	strcat(sramPath,".sram");
-	//Initialize ROM data
-	FILE * fpRom = fopen(curGameInfo.path,"rb");
+	FILE * fpRom = fopen(info->path,"rb");
 	fread(gameHeader,1,0x2000,fpRom);
 	for(int i=0; i<7; i++) {
 		if(gameHeader[0x10|i]&&((gameHeader[0x18|i]&0x80)==0)) {
@@ -127,6 +128,10 @@ bool retro_load_game(const struct retro_game_info * info) {
 	}
 	fclose(fpRom);
 	//Load SRAM
+	for(int i=0; i<5; i++) {
+		sramPath[sramLen+i] = gameHeader[4+i];
+	}
+	strcat(sramPath,".srm");
 	FILE * fpSram = fopen(sramPath,"rb");
 	if(fpSram!=NULL) {
 		for(int i=1; i<7; i++) {
@@ -269,8 +274,6 @@ void * retro_get_memory_data(unsigned int id) {
 	}
 	return NULL;
 }
-void retro_cheat_reset(void) {}
-void retro_cheat_set(unsigned index, bool enabled, const char *code) {}
 
 /////////////
 //MAIN LOOP//
@@ -524,10 +527,6 @@ bool retro_serialize(void *data_,size_t size) {
 	data[0x10009] = (clockticks6502>>8)&0xFF;
 	data[0x1000A] = (clockticks6502>>16)&0xFF;
 	data[0x1000B] = clockticks6502>>24;
-	data[0x1000C] = clockgoal6502&0xFF;
-	data[0x1000D] = (clockgoal6502>>8)&0xFF;
-	data[0x1000E] = (clockgoal6502>>16)&0xFF;
-	data[0x1000F] = clockgoal6502>>24;
 	return true;
 }
 bool retro_unserialize(const void *data_,size_t size) {
@@ -544,6 +543,7 @@ bool retro_unserialize(const void *data_,size_t size) {
 	status = data[0x10005];
 	pc = data[0x10006]|(data[0x10007]<<8);
 	clockticks6502 = data[0x10008]|(data[0x10009]<<8)|(data[0x1000A]<<16)|(data[0x1000B]<<24);
-	clockgoal6502 = data[0x1000C]|(data[0x1000D]<<8)|(data[0x1000E]<<16)|(data[0x1000F]<<24);
 	return true;
 }
+void retro_cheat_reset(void) {}
+void retro_cheat_set(unsigned index, bool enabled, const char *code) {}
