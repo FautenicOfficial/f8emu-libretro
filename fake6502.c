@@ -367,25 +367,35 @@ static void putvalue(uint16_t saveval) {
     if (addrtable[opcode] == acc) a = (uint8_t)(saveval & 0x00FF);
         else write6502(ea, (saveval & 0x00FF));
 }
+int tobcd(uint16_t x) {
+	int ones = (x&0xF);
+	int tens = (x>>4)&0xF;
+	return (10*tens)+ones;
+}
+uint16_t frombcd(int x) {
+	int ones = x%10;
+	int tens = x/10;
+	return ones|(tens<<4);
+}
 
 
 //instruction handler functions
 static void adc() {
     penaltyop = 1;
     value = getvalue();
-    result = (uint16_t)a + value + (uint16_t)(status & FLAG_CARRY);
     
     if (status & FLAG_DECIMAL) {
-	    if(((a&0xF)+(value&0xF)+(status&FLAG_CARRY))>9) {
-		    result += 0x06;
-	    }
-	    if((result&0xF0)>0x90) {
-		    result += 0x60;
+	    int realA = tobcd(a);
+	    int realVal = tobcd(value);
+	    int realRes = realA+realVal+(status&FLAG_CARRY);
+	    result = frombcd(realRes%100);
+	    if(realRes>=100) {
 		    setcarry();
 	    } else {
 		    clearcarry();
 	    }
     } else {
+	result = (uint16_t)a + value + (uint16_t)(status & FLAG_CARRY);
 	    carrycalc(result);
     }
     
@@ -743,19 +753,19 @@ static void sbc() {
     penaltyop = 1;
     value = getvalue();
     uint8_t carry = (status & FLAG_CARRY)^1;
-    result = (uint16_t)a - value - carry;
 
     if (status & FLAG_DECIMAL) {
-	    if(((result&0xF)>9)||(((a&0xF)-(value&0xF)-carry)&0x10)) {
-		    result -= 0x06;
-	    }
-	    if((result&0xF0)>0x90) {
-		    result -= 0x60;
-		    clearcarry();
-	    } else {
+	    int realA = tobcd(a);
+	    int realVal = 99-tobcd(value);
+	    int realRes = realA+realVal+(status&FLAG_CARRY);
+	    result = frombcd(realRes%100);
+	    if(realRes>=100) {
 		    setcarry();
+	    } else {
+		    clearcarry();
 	    }
     } else {
+	    result = (uint16_t)a - value - carry;
 	    carrycalc(result);
 	    status ^= 1;
     }
