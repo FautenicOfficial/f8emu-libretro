@@ -128,9 +128,10 @@ bool retro_load_game(const struct retro_game_info * info) {
 	}
 	fclose(fpRom);
 	//Load SRAM
-	for(int i=0; i<5; i++) {
+	for(int i=0; i<4; i++) {
 		sramPath[sramLen+i] = gameHeader[4+i];
 	}
+	sramPath[sramLen+4] = 0;
 	strcat(sramPath,".srm");
 	FILE * fpSram = fopen(sramPath,"rb");
 	if(fpSram!=NULL) {
