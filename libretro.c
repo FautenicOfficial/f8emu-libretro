@@ -226,16 +226,6 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info * 
 }
 size_t retro_get_memory_size(unsigned int id) {
 	switch(id) {
-		case RETRO_MEMORY_SAVE_RAM: {
-			/*size_t sramSize = 0;
-			for(int i=0; i<7; i++) {
-				if(gameHeader[0x10|i]&&(gameHeader[0x18|i]&0x80)) {
-					sramSize += bankSizes[i]<<(gameHeader[0x10|i]-1);
-				}
-			}
-			return sramSize;*/
-			return 0;
-		}
 		case RETRO_MEMORY_SYSTEM_RAM: {
 			return 0x10000;
 		}
@@ -247,25 +237,6 @@ size_t retro_get_memory_size(unsigned int id) {
 }
 void * retro_get_memory_data(unsigned int id) {
 	switch(id) {
-		case RETRO_MEMORY_SAVE_RAM: {
-			/*size_t sramSize = 0;
-			for(int i=0; i<7; i++) {
-				if(gameHeader[0x10|i]&&(gameHeader[0x18|i]&0x80)) {
-					sramSize += bankSizes[i]<<(gameHeader[0x10|i]-1);
-				}
-			}
-			uint8_t * data = (uint8_t*)malloc(sramSize);
-			size_t sramOffset = 0;
-			for(int i=0; i<7; i++) {
-				if(gameHeader[0x10|i]&&(gameHeader[0x18|i]&0x80)) {
-					size_t bankDataSize = bankSizes[i]<<(gameHeader[0x10|i]-1);
-					memcpy(&data[sramOffset],bankDataPtrs[i],bankDataSize);
-					sramOffset += bankDataSize;
-				}
-			}
-			return (void*)data;*/
-			return NULL;
-		}
 		case RETRO_MEMORY_SYSTEM_RAM: {
 			return (void*)memory;
 		}
