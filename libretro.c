@@ -499,6 +499,10 @@ bool retro_serialize(void *data_,size_t size) {
 	data[0x10009] = (clockticks6502>>8)&0xFF;
 	data[0x1000A] = (clockticks6502>>16)&0xFF;
 	data[0x1000B] = clockticks6502>>24;
+	data[0x1000C] = clockgoal6502&0xFF;
+	data[0x1000D] = (clockgoal6502>>8)&0xFF;
+	data[0x1000E] = (clockgoal6502>>16)&0xFF;
+	data[0x1000F] = clockgoal6502>>24;
 	return true;
 }
 bool retro_unserialize(const void *data_,size_t size) {
@@ -515,6 +519,7 @@ bool retro_unserialize(const void *data_,size_t size) {
 	status = data[0x10005];
 	pc = data[0x10006]|(data[0x10007]<<8);
 	clockticks6502 = data[0x10008]|(data[0x10009]<<8)|(data[0x1000A]<<16)|(data[0x1000B]<<24);
+	clockgoal6502 = data[0x1000C]|(data[0x1000D]<<8)|(data[0x1000E]<<16)|(data[0x1000F]<<24);
 	return true;
 }
 void retro_cheat_reset(void) {}
