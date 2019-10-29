@@ -426,23 +426,25 @@ static void inputCallbackFunc() {
 	for(int i=0; i<4; i++) {
 		//Does standard controller exist
 		if(portDevices[i]==RETRO_DEVICE_JOYPAD) {
-			memory[0x7480|i] = 0;
-			memory[0x7480|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_UP)?0x80:0;
-			memory[0x7480|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_DOWN)?0x40:0;
-			memory[0x7480|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_LEFT)?0x20:0;
-			memory[0x7480|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_RIGHT)?0x10:0;
-			memory[0x7480|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_START)?0x08:0;
-			memory[0x7480|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_A)?0x04:0;
-			memory[0x7480|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_B)?0x02:0;
-			memory[0x7480|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_L2)?0x01:0;
+			uint8_t padVal = 0;
+			padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_UP)?0x80:0;
+			padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_DOWN)?0x40:0;
+			padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_LEFT)?0x20:0;
+			padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_RIGHT)?0x10:0;
+			padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_START)?0x08:0;
+			padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_A)?0x04:0;
+			padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_B)?0x02:0;
+			padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_L2)?0x01:0;
+			memory[0x7480|i] = padVal;
 			//Does extended controller also exist
 			//if(portDevices[i]==RETRO_DEVICE_JOYPAD) {
-				memory[0x7484|i] = 0;
-				memory[0x7484|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_L)?0x20:0;
-				memory[0x7484|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_R)?0x10:0;
-				memory[0x7484|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_X)?0x04:0;
-				memory[0x7484|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_Y)?0x02:0;
-				memory[0x7484|i] |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_R2)?0x01:0;
+				padVal = 0;
+				padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_L)?0x20:0;
+				padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_R)?0x10:0;
+				padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_X)?0x04:0;
+				padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_Y)?0x02:0;
+				padVal |= inputQueryCallback(i,RETRO_DEVICE_JOYPAD,0,RETRO_DEVICE_ID_JOYPAD_R2)?0x01:0;
+				memory[0x7484|i] = padVal;
 			//}
 		}
 	}
