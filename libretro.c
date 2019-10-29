@@ -450,9 +450,6 @@ static void inputCallbackFunc() {
 void retro_run() {
 	//Run processor
 	exec6502(65536);
-	if(memory[0x7420]) {
-		nmi6502();
-	}
 	//Run callback functions
 	videoCallbackFunc();
 	audioCallbackFunc();

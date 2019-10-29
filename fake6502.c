@@ -978,6 +978,9 @@ void exec6502(uint32_t tickcount) {
     
     clockticks6502 -= clockgoal6502;
 
+    if(memory[0x7420]) {
+    	nmi6502();
+    }
 }
 
 void step6502() {
@@ -991,7 +994,14 @@ void step6502() {
     (*optable[opcode])();
     clockticks6502 += ticktable[opcode];
     if (penaltyop && penaltyaddr) clockticks6502++;
-    clockgoal6502 = clockticks6502;
+    if(clockticks6502>=clockgoal6502) {
+	clockticks6502 -= clockgoal6502;
+	clockgoal6502 = 0;
+	
+	if(memory[0x7420]) {
+		nmi6502();
+	}
+    }
 
     instructions++;
 }
