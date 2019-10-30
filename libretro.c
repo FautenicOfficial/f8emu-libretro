@@ -414,11 +414,16 @@ static void audioCallbackFunc() {
 			}
 		}
 		//Output sample
+		#ifndef USE_AUDIO_BATCH_CALLBACK
 		audioCallback(samp,samp);
-		//audioBuffer[i] = samp;
-		//audioBuffer[i|1] = samp;
+		#else
+		audioBuffer[i] = samp;
+		audioBuffer[i|1] = samp;
+		#endif
 	}
-	//audioBatchCallback(audioBuffer,800);
+	#ifdef USE_AUDIO_BATCH_CALLBACK
+	audioBatchCallback(audioBuffer,800);
+	#endif
 }
 static void inputCallbackFunc() {
 	inputPollCallback();
